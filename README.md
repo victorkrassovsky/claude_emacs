@@ -15,15 +15,56 @@ Requires Emacs 28.1+, [vterm](https://github.com/akermu/emacs-libvterm)
 (which compiles a small native module on install), and the `claude` CLI
 on your `PATH`. `transient` is required too but ships with Emacs 28+.
 
-Using `use-package` with `:vc` (Emacs 30+) or `straight.el`:
+`vterm` isn't on GNU ELPA, so make sure MELPA is configured first:
 
 ```elisp
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+(package-initialize)
+```
+
+**Recommended: `package-vc-install`** (built into Emacs 29+, no extra package
+manager needed, and doesn't depend on your `use-package` build including the
+optional `:vc` keyword support — that keyword lives in a separate
+`use-package-vc.el` file that not every Emacs distribution ships):
+
+```elisp
+(use-package vterm
+  :ensure t)
+
+(unless (package-installed-p 'claude-emacs)
+  (package-vc-install "https://github.com/victorkrassovsky/claude_emacs"))
+
 (use-package claude-emacs
-  :vc (:url "https://github.com/victorkrassovsky/claude-emacs" :branch "main")
+  :after vterm
   :bind-keymap ("C-c C-'" . claude-emacs-command-map))
 ```
 
-Or manually: clone this repo, add it to your `load-path`, and:
+To upgrade later: `M-x package-vc-upgrade RET claude-emacs`.
+
+**If your Emacs's `use-package` does bundle `use-package-vc`**, you can use
+`:vc` directly instead:
+
+```elisp
+(use-package claude-emacs
+  :vc (:url "https://github.com/victorkrassovsky/claude_emacs" :branch "main")
+  :bind-keymap ("C-c C-'" . claude-emacs-command-map))
+```
+
+If you see `Unrecognized keyword: :vc`, your build doesn't have
+`use-package-vc.el` — fall back to the `package-vc-install` method above.
+
+**Using `straight.el`:**
+
+```elisp
+(straight-use-package 'vterm)
+(straight-use-package
+ '(claude-emacs :type git :host github :repo "victorkrassovsky/claude_emacs"))
+(require 'claude-emacs)
+(keymap-set global-map "C-c C-'" claude-emacs-command-map)
+```
+
+**Manually:** clone this repo, add it to your `load-path`, and:
 
 ```elisp
 (require 'claude-emacs)
